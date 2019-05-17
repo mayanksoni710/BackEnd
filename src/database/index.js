@@ -7,7 +7,7 @@ export default () => {
   } = dbConfig
   mongoose.connect(conStr, { useNewUrlParser: true })
   mongoose.connection.on('connected', () => {
-    console.log("DB connection Successful") // eslint-disable-line
+    console.log("DB connection Successful congrats") // eslint-disable-line
   })
   mongoose.connection.on('error', (err) => {
   console.log('DB connection Failed..', err) // eslint-disable-line
