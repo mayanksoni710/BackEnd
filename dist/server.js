@@ -166,7 +166,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var mong
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"port\", function() { return port; });\n// Skipping default export as we can have multiple caonfig variable later\n// eslint-disable-next-line import/prefer-default-export\nvar port = 80;\n\n//# sourceURL=webpack:///./src/httpServer/config.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"port\", function() { return port; });\n// Skipping default export as we can have multiple caonfig variable later\n// eslint-disable-next-line import/prefer-default-export\nvar port = 3000;\n\n//# sourceURL=webpack:///./src/httpServer/config.js?");
 
 /***/ }),
 
