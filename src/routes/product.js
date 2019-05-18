@@ -3,8 +3,6 @@ import mongoose from 'mongoose'
 import uniqid from 'uniqid'
 import QRCode from 'qrcode'
 import 'babel-polyfill'
-// import JsBarcode from 'jsbarcode'
-// import Canvas from 'canvas'
 import Products from '../database/models/products.model'
 import {
   createError,
