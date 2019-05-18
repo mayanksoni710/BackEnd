@@ -3,6 +3,8 @@ import mongoose from 'mongoose'
 import uniqid from 'uniqid'
 import QRCode from 'qrcode'
 import 'babel-polyfill'
+// import JsBarcode from 'jsbarcode'
+// import Canvas from 'canvas'
 import Products from '../database/models/products.model'
 import {
   createError,
@@ -93,7 +95,7 @@ router.delete('/:userId?/:categoryId?/:productId?', (req, res, next) => {
   )
 })
 
-const saveProduct = (qRcode, cureentActivity, req, res, next) => {
+const saveProduct = (qRcode, productId, cureentActivity, req, res, next) => {
   const {
     params: {
       userId = -1,
@@ -108,7 +110,7 @@ const saveProduct = (qRcode, cureentActivity, req, res, next) => {
   } = req
   const newProduct = new Products({
     _id: new mongoose.Types.ObjectId(),
-    productId: uniqid.time(),
+    productId,
     userId,
     categoryId,
     productName,
@@ -128,9 +130,9 @@ const saveProduct = (qRcode, cureentActivity, req, res, next) => {
     })
 }
 
-const generateQRandAddProduct = async (data, cureentActivity, req, res, next) => {
+const generateQRandAddProduct = async (data, productId, cureentActivity, req, res, next) => {
   try {
-    return saveProduct(await QRCode.toDataURL(data), cureentActivity, req, res, next)
+    return saveProduct(await QRCode.toDataURL(data), productId, cureentActivity, req, res, next)
   } catch (err) {
     next(createError(200, QRCODE_GENERATION_ERROR))
     return -1
@@ -146,7 +148,6 @@ router.post('/:userId?/:categoryId?', (req, res, next) => {
     body: {
       productName = '',
       productDescription = '',
-      productUnitPrice = 0,
       productQuantity = 0,
       productNewQuantity = 0,
     },
@@ -175,15 +176,14 @@ router.post('/:userId?/:categoryId?', (req, res, next) => {
     next(createError(200, CATEGORY_ID_MISSING))
     return
   }
+  const productId = uniqid.time()
   generateQRandAddProduct(JSON.stringify({
+    productId,
     userId,
     categoryId,
     productName,
     productDescription,
-    productUnitPrice,
-    productQuantity: productNewQuantity,
-    history: cureentActivity,
-  }), cureentActivity, req, res, next)
+  }), productId, cureentActivity, req, res, next)
 })
 
 router.put('/:userId?/:categoryId?/:productId?', (req, res, next) => {

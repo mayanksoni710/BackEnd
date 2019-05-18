@@ -10,7 +10,7 @@ import {
 
 const router = express.Router()
 const createHtmlResponseForQr = (res, dataResponse) => {
-  dataResponse.map(({ productName, qRcode }) => res.write(`<div><div>${productName}</div><img height="100px" width="100px" src="${qRcode}" /></div>`))
+  dataResponse.map(({ productName, qRcode }) => res.write(`<div><div>${productName}</div><img height="50px" width="50px" src="${qRcode}" /></div>`))
 }
 router.get('/:userId?/:categoryId?', (req, res, next) => {
   const {
