@@ -14,6 +14,7 @@ const {
   Categories,
   Products,
   Product,
+  Qrcodelist,
 } = routes
 const app = express()
 connectDb()
@@ -28,6 +29,7 @@ app.use('/users', Users)
 app.use('/categories', Categories)
 app.use('/product', Product)
 app.use('/products', Products)
+app.use('/qrcodelist', Qrcodelist)
 app.use(notFoundError)
 app.use(errorHandler)
 

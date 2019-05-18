@@ -30,6 +30,7 @@ export const ERROR_UPDATING_USER = 'Error in updating User'
 export const PRODUCT_UPDATED_SUCCESSFULLY = 'Product Updated Successfully'
 export const CATEGORY_UPDATED_SUCCESSFULLY = 'Category Updated Successfully'
 export const USER_UPDATED_SUCCESSFULLY = 'User Updated Successfully'
+export const QRCODE_GENERATION_ERROR = 'QR code generation error'
 export const PRODUCT_HISTORY_TYPES = {
   CREATED: 'Product created',
   QUANTITY_UPDATED: 'Quantity Updated',

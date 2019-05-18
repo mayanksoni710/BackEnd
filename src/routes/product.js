@@ -1,6 +1,8 @@
 import express from 'express'
 import mongoose from 'mongoose'
 import uniqid from 'uniqid'
+import QRCode from 'qrcode'
+import 'babel-polyfill'
 import Products from '../database/models/products.model'
 import {
   createError,
@@ -19,6 +21,7 @@ import {
   ERROR_UPDATING_PRODUCT,
   PRODUCT_UPDATED_SUCCESSFULLY,
   PRODUCT_HISTORY_TYPES,
+  QRCODE_GENERATION_ERROR,
 } from '../constants/StaticConstants'
 
 const {
@@ -90,6 +93,50 @@ router.delete('/:userId?/:categoryId?/:productId?', (req, res, next) => {
   )
 })
 
+const saveProduct = (qRcode, cureentActivity, req, res, next) => {
+  const {
+    params: {
+      userId = -1,
+      categoryId = -1,
+    } = {},
+    body: {
+      productName = '',
+      productDescription = '',
+      productUnitPrice = 0,
+      productNewQuantity = 0,
+    },
+  } = req
+  const newProduct = new Products({
+    _id: new mongoose.Types.ObjectId(),
+    productId: uniqid.time(),
+    userId,
+    categoryId,
+    productName,
+    productDescription,
+    productUnitPrice,
+    productQuantity: productNewQuantity,
+    history: cureentActivity,
+    qRcode,
+  })
+  newProduct.save()
+    .then((response) => {
+      if (response) res.status(200).json(response)
+      else next(createError(200, PRODUCT_ADDED_SUCCESSFULLY))
+    })
+    .catch(() => {
+      next(createError(400, ERROR_ADDING_PRODUCT))
+    })
+}
+
+const generateQRandAddProduct = async (data, cureentActivity, req, res, next) => {
+  try {
+    return saveProduct(await QRCode.toDataURL(data), cureentActivity, req, res, next)
+  } catch (err) {
+    next(createError(200, QRCODE_GENERATION_ERROR))
+    return -1
+  }
+}
+
 router.post('/:userId?/:categoryId?', (req, res, next) => {
   const {
     params: {
@@ -128,9 +175,7 @@ router.post('/:userId?/:categoryId?', (req, res, next) => {
     next(createError(200, CATEGORY_ID_MISSING))
     return
   }
-  const newProduct = new Products({
-    _id: new mongoose.Types.ObjectId(),
-    productId: uniqid.time(),
+  generateQRandAddProduct(JSON.stringify({
     userId,
     categoryId,
     productName,
@@ -138,16 +183,9 @@ router.post('/:userId?/:categoryId?', (req, res, next) => {
     productUnitPrice,
     productQuantity: productNewQuantity,
     history: cureentActivity,
-  })
-  newProduct.save()
-    .then((response) => {
-      if (response) res.status(200).json(response)
-      else next(createError(200, PRODUCT_ADDED_SUCCESSFULLY))
-    })
-    .catch(() => {
-      next(createError(400, ERROR_ADDING_PRODUCT))
-    })
+  }), cureentActivity, req, res, next)
 })
+
 router.put('/:userId?/:categoryId?/:productId?', (req, res, next) => {
   const {
     params: {

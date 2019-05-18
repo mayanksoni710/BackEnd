@@ -10,6 +10,7 @@ const productsSchema = mongoose.Schema({
   productUnitPrice: Number,
   productQuantity: Number,
   history: Array,
+  qRcode: String,
 })
 
 export default mongoose.model('products', productsSchema, 'products')
