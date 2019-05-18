@@ -2,7 +2,10 @@ import express from 'express'
 import mongoose from 'mongoose'
 import uniqid from 'uniqid'
 import Products from '../database/models/products.model'
-import { createError } from '../utilities'
+import {
+  createError,
+  currentDateIst,
+} from '../utilities'
 import {
   USER_ID_MISSING,
   PRODUCT_NOT_FOUND,
@@ -13,8 +16,15 @@ import {
   PRODUCT_DELETED_SUCCESSFULLY,
   ERROR_DELETING_PRODUCT,
   ERROR_ADDING_PRODUCT,
+  ERROR_UPDATING_PRODUCT,
+  PRODUCT_UPDATED_SUCCESSFULLY,
+  PRODUCT_HISTORY_TYPES,
 } from '../constants/StaticConstants'
 
+const {
+  CREATED,
+  QUANTITY_UPDATED,
+} = PRODUCT_HISTORY_TYPES
 const router = express.Router()
 router.get('/:userId?/:categoryId?/:productId?', (req, res, next) => {
   const {
@@ -47,29 +57,77 @@ router.get('/:userId?/:categoryId?/:productId?', (req, res, next) => {
     })
 })
 
-router.post('/delete', (req, res, next) => {
+router.delete('/:userId?/:categoryId?/:productId?', (req, res, next) => {
   const {
-    userId = -1,
-    categoryId = -1,
-    productId = -1,
-  } = req.body
-
-  Products.deleteOne({ userId, categoryId, productId }, () => {
-    next(createError(400, ERROR_DELETING_PRODUCT))
-    return null
-  })
-  next(createError(200, PRODUCT_DELETED_SUCCESSFULLY))
+    params: {
+      userId = -1,
+      categoryId = -1,
+      productId = -1,
+    } = {},
+  } = req
+  if (userId === -1) {
+    next(createError(200, USER_ID_MISSING))
+    return
+  }
+  if (categoryId === -1) {
+    next(createError(200, CATEGORY_ID_MISSING))
+    return
+  }
+  if (productId === -1) {
+    next(createError(200, PRODUCT_ID_MISSING))
+    return
+  }
+  Products.deleteOne(
+    {
+      userId,
+      categoryId,
+      productId,
+    },
+    (err) => {
+      if (err) next(createError(400, ERROR_DELETING_PRODUCT))
+      res.status(200).send({ message: PRODUCT_DELETED_SUCCESSFULLY })
+    },
+  )
 })
 
-router.post('/add', (req, res, next) => {
+router.post('/:userId?/:categoryId?', (req, res, next) => {
   const {
-    userId = -1,
-    categoryId = -1,
-    productName = '',
-    productDescription = '',
-    productUnitPrice = 0,
-    productQuantity = 0,
-  } = req.body
+    params: {
+      userId = -1,
+      categoryId = -1,
+    } = {},
+    body: {
+      productName = '',
+      productDescription = '',
+      productUnitPrice = 0,
+      productQuantity = 0,
+      productNewQuantity = 0,
+    },
+  } = req
+  let cureentActivity = [{
+    date: currentDateIst(),
+    type: CREATED,
+    message: 'Product Added succesfully in system',
+  }]
+  if (productQuantity !== productNewQuantity) {
+    cureentActivity = [
+      ...cureentActivity,
+      {
+        date: currentDateIst(),
+        type: QUANTITY_UPDATED,
+        oldValue: productQuantity,
+        updatedValue: productNewQuantity,
+        message: `quantity updated from ${productQuantity} to ${productNewQuantity}`,
+      }]
+  }
+  if (userId === -1) {
+    next(createError(200, USER_ID_MISSING))
+    return
+  }
+  if (categoryId === -1) {
+    next(createError(200, CATEGORY_ID_MISSING))
+    return
+  }
   const newProduct = new Products({
     _id: new mongoose.Types.ObjectId(),
     productId: uniqid.time(),
@@ -78,7 +136,8 @@ router.post('/add', (req, res, next) => {
     productName,
     productDescription,
     productUnitPrice,
-    productQuantity,
+    productQuantity: productNewQuantity,
+    history: cureentActivity,
   })
   newProduct.save()
     .then((response) => {
@@ -89,4 +148,83 @@ router.post('/add', (req, res, next) => {
       next(createError(400, ERROR_ADDING_PRODUCT))
     })
 })
+router.put('/:userId?/:categoryId?/:productId?', (req, res, next) => {
+  const {
+    params: {
+      userId = -1,
+      categoryId = -1,
+      productId = -1,
+    } = {},
+    body: {
+      productName = -1,
+      productDescription = -1,
+      productUnitPrice = -1,
+      productQuantity = 0,
+      productNewQuantity = 0,
+    },
+  } = req
+  let cureentActivity = []
+  if (productQuantity !== productNewQuantity) {
+    cureentActivity = [{
+      date: currentDateIst(),
+      type: QUANTITY_UPDATED,
+      oldValue: productQuantity,
+      updatedValue: productNewQuantity,
+      message: `quantity updated from ${productQuantity} to ${productNewQuantity}`,
+    }]
+  }
+  let detailsToUpdate = {}
+  if (userId === -1) {
+    next(createError(200, USER_ID_MISSING))
+    return
+  }
+  if (categoryId === -1) {
+    next(createError(200, CATEGORY_ID_MISSING))
+    return
+  }
+  if (productId === -1) {
+    next(createError(200, PRODUCT_ID_MISSING))
+    return
+  }
+  detailsToUpdate = {
+    ...detailsToUpdate,
+    $push: { history: cureentActivity },
+  }
+  if (productName !== -1) {
+    detailsToUpdate = {
+      ...detailsToUpdate,
+      productName,
+    }
+  }
+  if (productDescription !== -1) {
+    detailsToUpdate = {
+      ...detailsToUpdate,
+      productDescription,
+    }
+  }
+  if (productUnitPrice !== -1) {
+    detailsToUpdate = {
+      ...detailsToUpdate,
+      productUnitPrice,
+    }
+  }
+  if (productQuantity !== -1) {
+    detailsToUpdate = {
+      ...detailsToUpdate,
+      productQuantity: productNewQuantity,
+    }
+  }
+  Products.update({
+    userId,
+    categoryId,
+    productId,
+  },
+  {
+    ...detailsToUpdate,
+  }, (err) => {
+    if (err) { next(createError(400, ERROR_UPDATING_PRODUCT)) }
+    next(createError(200, PRODUCT_UPDATED_SUCCESSFULLY))
+  })
+})
+
 export default router

@@ -24,3 +24,13 @@ export const CATEGORY_ADDED_SUCCESSFULLY = 'Category Deleted Successfully'
 export const ERROR_ADDING_USER = 'Error in adding User'
 export const ERROR_ADDING_PRODUCT = 'Error in adding User Product'
 export const ERROR_ADDING_CATEGORY = 'Error in adding User Category'
+export const ERROR_UPDATING_PRODUCT = 'Error in updating Product'
+export const ERROR_UPDATING_CATEGORY = 'Error in updating Category'
+export const ERROR_UPDATING_USER = 'Error in updating User'
+export const PRODUCT_UPDATED_SUCCESSFULLY = 'Product Updated Successfully'
+export const CATEGORY_UPDATED_SUCCESSFULLY = 'Category Updated Successfully'
+export const USER_UPDATED_SUCCESSFULLY = 'User Updated Successfully'
+export const PRODUCT_HISTORY_TYPES = {
+  CREATED: 'Product created',
+  QUANTITY_UPDATED: 'Quantity Updated',
+}

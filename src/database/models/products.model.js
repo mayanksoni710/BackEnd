@@ -9,6 +9,7 @@ const productsSchema = mongoose.Schema({
   productDescription: String,
   productUnitPrice: Number,
   productQuantity: Number,
+  history: Array,
 })
 
 export default mongoose.model('products', productsSchema, 'products')

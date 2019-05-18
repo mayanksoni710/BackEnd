@@ -10,6 +10,9 @@ import {
   USER_ADDED_SUCCESSFULLY,
   ERROR_DELETING_USER,
   ERROR_ADDING_USER,
+  USER_UPDATED_SUCCESSFULLY,
+  ERROR_UPDATING_USER,
+  USER_ID_MISSING,
 } from '../constants/StaticConstants'
 
 const router = express.Router()
@@ -24,26 +27,32 @@ router.get('/', (req, res, next) => {
       next(createError(400, USER_ID_INVALID))
     })
 })
-router.post('/delete', (req, res, next) => {
+router.delete('/:userId?', (req, res, next) => {
   const {
-    userId = -1,
-  } = req.body
-
-  Users.deleteOne({ userId }, () => {
-    next(createError(400, ERROR_DELETING_USER))
-    return null
+    params: {
+      userId = -1,
+    } = {},
+  } = req
+  if (userId === -1) {
+    next(createError(200, USER_ID_MISSING))
+    return
+  }
+  Users.deleteOne({ userId }, (err) => {
+    if (err) next(createError(400, ERROR_DELETING_USER))
+    res.status(200).send({ message: USER_DELETED_SUCCESSFULLY })
   })
-  next(createError(200, USER_DELETED_SUCCESSFULLY))
 })
 
-router.post('/add', (req, res, next) => {
+router.post('/', (req, res, next) => {
   const {
-    name = '',
-    gender = '',
-    age = 0,
-    email = '',
-    address = '',
-  } = req.body
+    body: {
+      name = -1,
+      gender = -1,
+      age = -1,
+      email = -1,
+      address = -1,
+    },
+  } = req
   const newUser = new Users({
     _id: new mongoose.Types.ObjectId(),
     userId: uniqid.time(),
@@ -62,5 +71,64 @@ router.post('/add', (req, res, next) => {
       next(createError(400, ERROR_ADDING_USER))
     })
 })
+
+router.put('/:userId?', (req, res, next) => {
+  const {
+    params: {
+      userId = -1,
+    } = {},
+    body: {
+      name = -1,
+      gender = -1,
+      age = -1,
+      email = -1,
+      address = -1,
+    },
+  } = req
+  let detailsToUpdate = {}
+  if (userId === -1) {
+    next(createError(200, USER_ID_MISSING))
+    return
+  }
+  if (name !== -1) {
+    detailsToUpdate = {
+      ...detailsToUpdate,
+      name,
+    }
+  }
+  if (gender !== -1) {
+    detailsToUpdate = {
+      ...detailsToUpdate,
+      gender,
+    }
+  }
+  if (age !== -1) {
+    detailsToUpdate = {
+      ...detailsToUpdate,
+      age,
+    }
+  }
+  if (email !== -1) {
+    detailsToUpdate = {
+      ...detailsToUpdate,
+      email,
+    }
+  }
+  if (address !== -1) {
+    detailsToUpdate = {
+      ...detailsToUpdate,
+      address,
+    }
+  }
+  Users.update(
+    { userId },
+    { ...detailsToUpdate },
+    (err) => {
+      if (err) { next(createError(400, ERROR_UPDATING_USER)) }
+      next(createError(200, USER_UPDATED_SUCCESSFULLY))
+    },
+  )
+})
+
 
 export default router

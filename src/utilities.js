@@ -8,3 +8,9 @@ export const createError = (
   error.status = status
   return error
 }
+
+export const currentDateIst = () => {
+  let indiaTime = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
+  indiaTime = new Date(indiaTime)
+  return indiaTime
+}
