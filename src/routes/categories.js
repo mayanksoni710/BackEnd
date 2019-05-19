@@ -37,7 +37,7 @@ router.get('/:userId?', (req, res, next) => {
     })
 })
 
-router.delete('/', (req, res, next) => {
+router.delete('/:userId?/:categoryId?', (req, res, next) => {
   const {
     userId = '',
     categoryId = '',
